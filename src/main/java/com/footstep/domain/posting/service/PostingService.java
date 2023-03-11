@@ -147,6 +147,7 @@ public class PostingService {
         Users currentUsers = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
                 .orElseThrow(() -> new BaseException(UNAUTHORIZED));
         List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
+        reported.add(0L);
         List<Posting> feeds = postingRepository.findAllFeed(reported, currentUsers);
         if (feeds.isEmpty()){
             throw new BaseException(NOT_FOUND_POSTING);
@@ -177,6 +178,7 @@ public class PostingService {
         Users targetUsers = usersRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(REQUEST_ERROR));
         List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
+        reported.add(0L);
         List<Posting> feeds = postingRepository.findSpecificFeed(reported, targetUsers);
         if (feeds.isEmpty())
             throw new BaseException(NOT_FOUND_POSTING);
@@ -232,6 +234,7 @@ public class PostingService {
                 .orElseThrow(() -> new BaseException(NOT_FOUND_PLACE));
         Integer likeCount = likeRepository.countByPosting(posting).orElse(0);
         List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
+        reported.add(0L);
         List<Comment> comment = commentRepository.findByPosting(posting, reported);
         Integer countComment = commentRepository.countByPosting(postingId);
         //Timestamp postDate = Timestamp.valueOf(posting.getCreatedDate());

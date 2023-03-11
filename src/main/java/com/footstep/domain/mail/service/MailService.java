@@ -27,7 +27,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String email;
 
-    public void sendMail(String to) throws BaseException, MessagingException , UnsupportedEncodingException {
+    public void sendMailForBlock(String to) throws BaseException, MessagingException , UnsupportedEncodingException {
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
@@ -43,6 +43,49 @@ public class MailService {
         text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
         text += "<br>";
         text += "감사합니다.";
+
+        messageHelper.setFrom("footstepdangbal@gmail.com", "당신의 발자취");
+        messageHelper.setTo(to);
+        messageHelper.setSubject("당신의 발자취 계정 정지 안내드립니다.");
+        messageHelper.setText(text, true);
+
+        javaMailSender.send(message);
+    }
+
+    public void sendMailForReport(String to, String nickname, String title, String reason) throws BaseException, MessagingException , UnsupportedEncodingException {
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
+        String text = "";
+        if (title.equals("")) {
+            text += "<div style='margin:20px;'>";
+            text += "<h1> 당신의 발자취 신고 안내입니다.</h1>";
+            text += "<br>";
+            text += "<h3>" + nickname + "님이 신고 당하였습니다." + "<h3>";
+            text += "<h2> 신고 사유 <h2>";
+            text += "<br>";
+            text += "<h3>" + reason + "<h3>";
+            text += "<br>";
+            text += "<b> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.<b>";
+            text += "<br>";
+            text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
+            text += "<br>";
+            text += "감사합니다.";
+        } else {
+            text += "<div style='margin:20px;'>";
+            text += "<h1> 당신의 발자취 신고 안내입니다.</h1>";
+            text += "<br>";
+            text += "<h3>" + nickname + "님께서 작성하신" + title  + " 이 신고 당하였습니다." + "<h3>";
+            text += "<h2> 신고 사유 <h2>";
+            text += "<br>";
+            text += "<h3>" + reason + "<h3>";
+            text += "<br>";
+            text += "<b> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.<b>";
+            text += "<br>";
+            text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
+            text += "<br>";
+            text += "감사합니다.";
+        }
 
         messageHelper.setFrom("footstepdangbal@gmail.com", "당신의 발자취");
         messageHelper.setTo(to);
