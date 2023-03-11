@@ -22,10 +22,6 @@ public class MailService {
 
     @Autowired
     private JavaMailSender javaMailSender;
-    private final UsersRepository usersRepository;
-
-    @Value("${spring.mail.username}")
-    private String email;
 
     public void sendMailForBlock(String to) throws BaseException, MessagingException , UnsupportedEncodingException {
 
