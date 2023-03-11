@@ -68,7 +68,7 @@ public class ReportService {
                                 comment.getId(), reportedUser.getId(), currentUsers));
                     }
                 }
-                blockContent(reportedUser);
+                sendMail(reportedUser, "", ReportReason.get(createReportDto.getReasonNumber()).getReason());
             }
             case 1 -> {
                 Posting posting = postingRepository.findById(targetId).orElseThrow(
@@ -78,7 +78,7 @@ public class ReportService {
                 }
                 reportRepository.save(new Report(ReportTarget.POSTING, ReportReason.get(createReportDto.getReasonNumber()),
                         posting.getId(), posting.getUsers().getId(), currentUsers));
-                blockContent(posting.getUsers());
+                sendMail(posting.getUsers(), posting.getContent(), ReportReason.get(createReportDto.getReasonNumber()).getReason());
             }
             case 2 -> {
                 Comment comment = commentRepository.findById(targetId).orElseThrow(
@@ -88,22 +88,30 @@ public class ReportService {
                 }
                 reportRepository.save(new Report(ReportTarget.POSTING, ReportReason.get(createReportDto.getReasonNumber()),
                         comment.getId(), comment.getUsers().getId(), currentUsers));
-                blockContent(comment.getUsers());
+                sendMail(comment.getUsers(), comment.getContent(), ReportReason.get(createReportDto.getReasonNumber()).getReason());
             }
         }
     }
 
-    public void blockContent(Users reportedUser) throws BaseException {
+    public void sendMail(Users reportedUser, String title, String reason) throws BaseException {
         if (reportedUser.getReportedCount() >= 3) {
             reportedUser.initReportedCount();
             try{
-                mailService.sendMail(reportedUser.getEmail());
+                mailService.sendMailForBlock(reportedUser.getEmail());
             } catch (UnsupportedEncodingException exception) {
                 throw new BaseException(INVALID_CHAR_SET);
             } catch (MessagingException exception) {
                 throw new BaseException(INVALID_CHAR_SET);
             }
             usersService.blocked(reportedUser);
+        } else {
+            try{
+                mailService.sendMailForReport(reportedUser.getEmail(), reportedUser.getNickname(), title, reason);
+            } catch (UnsupportedEncodingException exception) {
+                throw new BaseException(INVALID_CHAR_SET);
+            } catch (MessagingException exception) {
+                throw new BaseException(INVALID_CHAR_SET);
+            }
         }
         usersRepository.save(reportedUser);
     }
