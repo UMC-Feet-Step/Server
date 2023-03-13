@@ -36,13 +36,12 @@ public class MailService {
         text += "<div style='margin:20px;'>";
         text += "<h1> 당신의 발자취 계정 정지안내입니다.</h1>";
         text += "<br>";
-        text += "신고 접수가 3회 누적되어 계정이 한 달간 정지되었습니다.";
+        text += "<p> 신고 접수가 3회 누적되어 계정이 한 달간 정지되었습니다. </p>";
         text += "<br>";
-        text += "해당 계정의 게시글은 모두 삭제 처리 예정입니다.";
+        text += "<p> <b>해당 계정의 게시글은 모두 삭제 처리 예정입니다.</b> </p>";
         text += "<br>";
-        text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
-        text += "<br>";
-        text += "감사합니다.";
+        text += "<p> 문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.</p>";
+        text += "<p> 감사합니다.</p>";
 
         messageHelper.setFrom("footstepdangbal@gmail.com", "당신의 발자취");
         messageHelper.setTo(to);
@@ -61,35 +60,31 @@ public class MailService {
             text += "<div style='margin:20px;'>";
             text += "<h1> 당신의 발자취 신고 안내입니다.</h1>";
             text += "<br>";
-            text += "<h3>" + nickname + "님이 신고 당하였습니다." + "<h3>";
-            text += "<h2> 신고 사유 <h2>";
+            text += "<p> <b>" + nickname + "</b>님은 신고당하셨습니다. </p>";
+            text += "<h2> 신고 사유 </h2>";
+            text += "<p>" + reason + "</p>";
             text += "<br>";
-            text += "<h3>" + reason + "<h3>";
+            text += "<p> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.</p>";
             text += "<br>";
-            text += "<b> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.<b>";
-            text += "<br>";
-            text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
-            text += "<br>";
-            text += "감사합니다.";
+            text += "<p> 문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.</p>";
+            text += "<p> 감사합니다. </p>";
         } else {
             text += "<div style='margin:20px;'>";
             text += "<h1> 당신의 발자취 신고 안내입니다.</h1>";
             text += "<br>";
-            text += "<h3>" + nickname + "님께서 작성하신" + title  + " 이 신고 당하였습니다." + "<h3>";
-            text += "<h2> 신고 사유 <h2>";
+            text += "<p> <b>" + nickname + "</b>님께서 작성하신 <b>'" + title  + "'</b>이 신고 당하였습니다.</p>";
+            text += "<h2> 신고 사유 </h2>";
+            text += "<p>" + reason + "</p>";
             text += "<br>";
-            text += "<h3>" + reason + "<h3>";
+            text += "<p> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.</p>";
             text += "<br>";
-            text += "<b> 다른 사람에게 피해를 주는 말이나 도배는 삼가해주시기 바랍니다.<b>";
-            text += "<br>";
-            text += "문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.";
-            text += "<br>";
-            text += "감사합니다.";
+            text += "<p> 문의할 내용이 있다면 <b>footstepdangbal@gmail.com</b>으로 문의부탁드립니다.</p>";
+            text += "<p> 감사합니다. </p>";
         }
 
         messageHelper.setFrom("footstepdangbal@gmail.com", "당신의 발자취");
         messageHelper.setTo(to);
-        messageHelper.setSubject("당신의 발자취 계정 정지 안내드립니다.");
+        messageHelper.setSubject("당신의 발자취 신고 안내드립니다.");
         messageHelper.setText(text, true);
 
         javaMailSender.send(message);
