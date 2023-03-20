@@ -237,7 +237,6 @@ public class PostingService {
         reported.add(0L);
         List<Comment> comment = commentRepository.findByPosting(posting, reported);
         Integer countComment = commentRepository.countByPosting(postingId);
-        //Timestamp postDate = Timestamp.valueOf(posting.getCreatedDate());
         return SpecificPostingDto.builder()
                 .postingDate(posting.getRecordDate())
                 .postingName(posting.getTitle())
@@ -245,10 +244,9 @@ public class PostingService {
                 .imageUrl(posting.getImageUrl())
                 .placeName(place.getName())
                 .likeNum(Integer.toString(likeCount))
-                //.nickName(currentUsers.getNickname())
                 .nickName(posting.getUsers().getNickname())
                 .commentList(comment.stream()
-                        .map(c -> CommentDto.builder().commentId(c.getId()).nickname(c.getUsers().getNickname())
+                        .map(c -> CommentDto.builder().usersId(c.getUsers().getId()).commentId(c.getId()).nickname(c.getUsers().getNickname())
                                 .content(c.getContent()).build()).collect(Collectors.toList()))
                 .commentNum(Integer.toString(countComment))
                 .build();
