@@ -10,6 +10,8 @@ import lombok.*;
 @Builder
 public class CommentDto {
 
+    @ApiModelProperty(notes = "댓글 작성사 ID", example = "1")
+    private Long usersId;
     @ApiModelProperty(notes = "댓글 작성자 닉네임", example = "위즈")
     private String nickname;
     @ApiModelProperty(notes = "댓글 내용", example = "내용예시")
