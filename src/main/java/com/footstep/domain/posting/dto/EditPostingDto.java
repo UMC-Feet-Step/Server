@@ -1,6 +1,5 @@
 package com.footstep.domain.posting.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
@@ -22,5 +21,4 @@ public class EditPostingDto {
     private CreatePlaceDto createPlaceDto;
     @ApiModelProperty(value = "발자취 공개 여부", required = true, example = "1")
     private int visibilityStatusCode;
-    private String imageUrl;
 }

@@ -85,12 +85,11 @@ public class PostingService {
                 .content(posting.getContent())
                 .recordDate(posting.getRecordDate())
                 .visibilityStatusCode(posting.getVisibilityStatus().getCode())
-                .imageUrl(posting.getImageUrl())
                 .build();
         return editPostingDto;
     }
 
-    public void editPosting(Long postingId, MultipartFile image, CreatePostingDto createPostingDto) throws BaseException, IOException {
+    public void editPosting(Long postingId, CreatePostingDto createPostingDto) throws BaseException, IOException {
         Users currentUsers = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
                 .orElseThrow(() -> new BaseException(UNAUTHORIZED));
         Posting posting = postingRepository.findById(postingId)
@@ -98,15 +97,11 @@ public class PostingService {
         CreatePlaceDto createPlaceDto = createPostingDto.getCreatePlaceDto();
         Optional<Place> place = placeService.getPlace(createPlaceDto);
         Place createPlace;
-        String imageUrl = null;
-        if (!image.isEmpty()) {
-            imageUrl = s3UploadUtil.upload(image);
-        }
         if (place.isEmpty())
             createPlace = placeService.createPlace(createPlaceDto);
         else
             createPlace = place.get();
-        posting.editPosting(createPostingDto, createPlace, imageUrl);
+        posting.editPosting(createPostingDto, createPlace);
         postingRepository.save(posting);
     }
 
@@ -115,7 +110,14 @@ public class PostingService {
                 .orElseThrow(() -> new BaseException(UNAUTHORIZED));
         Posting posting = postingRepository.findById(postingId)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_POSTING));
+        if (currentUsers.getId() != posting.getUsers().getId()) {
+            throw new BaseException(INVALID_USER_JWT);
+        }
         posting.removePosting();
+        for (Comment comment : posting.getComments()) {
+            comment.changeStatus();
+            commentRepository.save(comment);
+        }
         postingRepository.save(posting);
     }
 
