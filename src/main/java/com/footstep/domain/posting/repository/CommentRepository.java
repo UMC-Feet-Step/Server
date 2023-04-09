@@ -2,6 +2,7 @@ package com.footstep.domain.posting.repository;
 
 import com.footstep.domain.posting.domain.Comment;
 import com.footstep.domain.posting.domain.posting.Posting;
+import com.footstep.domain.users.domain.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Override
     @Query("SELECT c FROM Comment c WHERE c.status = 'NORMAL' AND c.id = :commentId")
     Optional<Comment> findById(@Param("commentId") Long commentId);
+
+    @Query("SELECT c FROM Comment c WHERE c.status = 'NORMAL' AND c.users = :users")
+    List<Comment> findByUsers(@Param("users") Users users);
 }

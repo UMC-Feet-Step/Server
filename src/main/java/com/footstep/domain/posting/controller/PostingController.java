@@ -9,7 +9,6 @@ import com.footstep.domain.report.service.ReportService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.footstep.domain.posting.service.PostingService;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,13 +93,12 @@ public class PostingController {
     public BaseResponse<String> editPosting(@ApiParam(value = "게시물 ID", required = true, example = "3")
                                                     @PathVariable("posting-id")Long postingId,
                                                     @RequestHeader("Authorization")String accessToken,
-                                                    @RequestPart MultipartFile image,
                                                     @Valid @ModelAttribute CreatePostingDto createPostingDto,
                                                     BindingResult bindingResult) throws IOException {
         try {
             if(bindingResult.hasErrors())
                 postingService.isValid(bindingResult.getFieldErrors().get(0).getField());
-            postingService.editPosting(postingId, image, createPostingDto);
+            postingService.editPosting(postingId, createPostingDto);
             return new BaseResponse<>("수정 성공!");
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());

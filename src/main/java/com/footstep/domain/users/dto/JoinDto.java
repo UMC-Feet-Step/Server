@@ -19,7 +19,7 @@ public class JoinDto {
     private String email;
 
     @ApiModelProperty(example = "footstep12")
-    @NotBlank
+    @Pattern(regexp = "^([a-zA-Z0-9]{8,16})$")
     private String password;
 
     @ApiModelProperty(example = "하마")

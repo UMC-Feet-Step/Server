@@ -1,9 +1,11 @@
 package com.footstep.domain.users.service;
 
 import com.footstep.domain.base.BaseException;
+import com.footstep.domain.base.Status;
 import com.footstep.domain.posting.domain.Comment;
 import com.footstep.domain.posting.domain.Likes;
 import com.footstep.domain.posting.domain.posting.Posting;
+import com.footstep.domain.posting.repository.CommentRepository;
 import com.footstep.domain.posting.repository.LikeRepository;
 import com.footstep.domain.posting.repository.PostingRepository;
 import com.footstep.domain.posting.service.CommentService;
@@ -45,6 +47,7 @@ public class UsersService {
     private final PostingService postingService;
     private final CommentService commentService;
     private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
 
     public void join(JoinDto joinDto) throws BaseException {
         joinDto.setPassword(passwordEncoder.encode(joinDto.getPassword()));
@@ -54,13 +57,13 @@ public class UsersService {
         if (!usersRepository.findByNickname(joinDto.getNickname()).isEmpty()) {
             throw new BaseException(DUPLICATED_NICKNAME);
         }
-
         usersRepository.save(Users.ofUser(joinDto));
     }
 
     public MyPageInfo getMyPage() throws BaseException {
         Users currentUsers = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail()).orElseThrow(() -> new BaseException(UNAUTHORIZED));
-        return new MyPageInfo(currentUsers.getNickname(), currentUsers.getPostings().size(), currentUsers.getProfileImageUrl());
+        long postingCount = currentUsers.getPostings().stream().filter(p -> p.getStatus() == Status.NORMAL).count();
+        return new MyPageInfo(currentUsers.getNickname(), postingCount, currentUsers.getProfileImageUrl());
     }
 
     public void changePassword(ChangePasswordInfo changePasswordInfo) throws BaseException {
@@ -120,17 +123,20 @@ public class UsersService {
 
     public void blocked(Users users) throws BaseException {
         List<Posting> postings = postingRepository.findByUsers(users);
+        List<Comment> comments = commentRepository.findByUsers(users);
         for (Posting posting : postings) {
-            postingService.removePosting(posting.getId());
+            posting.removePosting();
+            postingRepository.save(posting);
         }
-        for (Comment comment : users.getComments()) {
-            commentService.deleteComment(comment.getId());
+        for (Comment comment : comments) {
+            comment.changeStatus();
+            commentRepository.save(comment);
         }
         for (Likes like : users.getLikes()) {
             likeRepository.delete(like);
         }
         authService.removeRefreshTokenByUser(users.getEmail());
-        users.changeBannedDate(LocalDateTime.now().plusMinutes(5));
+        users.changeBannedDate(LocalDateTime.now().plusDays(30));
         usersRepository.save(users);
     }
 }

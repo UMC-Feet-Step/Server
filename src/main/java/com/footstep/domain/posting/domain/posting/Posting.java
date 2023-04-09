@@ -68,10 +68,9 @@ public class Posting extends BaseTimeEntity {
         this.place = place;
     }
 
-    public void editPosting(CreatePostingDto createPostingDto, Place place, String imageUrl) {
+    public void editPosting(CreatePostingDto createPostingDto, Place place) {
         this.title = createPostingDto.getTitle();
         this.content = createPostingDto.getContent();
-        this.imageUrl = imageUrl;
         this.recordDate = createPostingDto.getRecordDate();
         this.visibilityStatus = VisibilityStatus.get(createPostingDto.getVisibilityStatusCode());
         this.place = place;
