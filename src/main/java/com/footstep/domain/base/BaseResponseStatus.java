@@ -32,7 +32,7 @@ public enum BaseResponseStatus {
     POST_USERS_EMPTY_EMAIL(false, 2015, "이메일을 입력해주세요."),
     POST_USERS_INVALID_EMAIL(false, 2016, "이메일 형식을 확인해주세요."),
     POST_USERS_EXISTS_EMAIL(false,2017,"중복된 이메일입니다."),
-    POST_USERS_EMPTY_PASSWORD(false, 2018, "비밀번호를 입력해주세요."),
+    POST_USERS_EMPTY_PASSWORD(false, 2018, "비밀번호는 영문과 숫자를 조합하여 8~16자리만 입력해주세요."),
     POST_USERS_EMPTY_NICKNAME(false, 2019, "닉네임을 입력해주세요."),
 
     // [PATCH] /my-page/password
