@@ -85,6 +85,7 @@ public class PostingService {
                 .content(posting.getContent())
                 .recordDate(posting.getRecordDate())
                 .visibilityStatusCode(posting.getVisibilityStatus().getCode())
+                .imageUrl(posting.getImageUrl())
                 .build();
         return editPostingDto;
     }
