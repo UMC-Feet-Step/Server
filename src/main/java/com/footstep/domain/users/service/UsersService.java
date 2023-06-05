@@ -2,6 +2,7 @@ package com.footstep.domain.users.service;
 
 import com.footstep.domain.base.BaseException;
 import com.footstep.domain.base.Status;
+import com.footstep.domain.mail.service.MailService;
 import com.footstep.domain.posting.domain.Comment;
 import com.footstep.domain.posting.domain.Likes;
 import com.footstep.domain.posting.domain.posting.Posting;
@@ -12,6 +13,7 @@ import com.footstep.domain.posting.service.CommentService;
 import com.footstep.domain.posting.service.PostingService;
 import com.footstep.domain.users.domain.Users;
 import com.footstep.domain.users.dto.JoinDto;
+import com.footstep.domain.users.dto.UsersInfo;
 import com.footstep.domain.users.dto.changeProfileInfo.ChangePasswordInfo;
 import com.footstep.domain.users.dto.MyPageInfo;
 import com.footstep.domain.users.dto.TokenDto;
@@ -25,9 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +50,7 @@ public class UsersService {
     private final CommentService commentService;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
+    private final MailService mailService;
 
     public void join(JoinDto joinDto) throws BaseException {
         joinDto.setPassword(passwordEncoder.encode(joinDto.getPassword()));
@@ -66,12 +69,23 @@ public class UsersService {
         return new MyPageInfo(currentUsers.getNickname(), postingCount, currentUsers.getProfileImageUrl());
     }
 
+    public void findPassword(UsersInfo usersInfo) throws BaseException, MessagingException, UnsupportedEncodingException {
+        Users users = usersRepository.findByEmail(usersInfo.getEmail()).orElseThrow(
+                () -> new BaseException(NOT_FOUND_USERS_ID));
+        if (!users.getNickname().equals(usersInfo.getUsername())) {
+            throw new BaseException(REQUEST_ERROR);
+        }
+        String password = mailService.sendMailForPassword(users.getEmail(), users.getNickname());
+        users.changePassword(passwordEncoder.encode(password));
+        usersRepository.save(users);
+    }
+
     public void changePassword(ChangePasswordInfo changePasswordInfo) throws BaseException {
         Users users = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail()).orElseThrow(() -> new BaseException(UNAUTHORIZED));
         if (!passwordEncoder.matches(changePasswordInfo.getCurrentPassword(), users.getPassword())) {
             throw new BaseException(INVALID_PASSWORD);
         }
-        if (Objects.equals(changePasswordInfo.getCurrentPassword(), changePasswordInfo.getChangedPassword())) {
+        if (changePasswordInfo.getCurrentPassword().equals(changePasswordInfo.getChangedPassword())) {
             throw new BaseException(DUPLICATED_PASSWORD);
         }
         users.changePassword(passwordEncoder.encode(changePasswordInfo.getChangedPassword()));

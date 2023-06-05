@@ -2,9 +2,11 @@ package com.footstep.domain.users.controller;
 
 import com.footstep.domain.base.BaseException;
 import com.footstep.domain.base.BaseResponse;
+import com.footstep.domain.mail.service.MailService;
 import com.footstep.domain.report.dto.CreateReportDto;
 import com.footstep.domain.report.service.ReportService;
 import com.footstep.domain.users.dto.JoinDto;
+import com.footstep.domain.users.dto.UsersInfo;
 import com.footstep.domain.users.dto.changeProfileInfo.ChangeNicknameInfo;
 import com.footstep.domain.users.dto.changeProfileInfo.ChangePasswordInfo;
 import com.footstep.domain.users.dto.MyPageInfo;
@@ -16,8 +18,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 @Api(tags = {"회원 정보 API"})
 @ApiResponses({
@@ -29,6 +33,7 @@ public class UsersController {
 
     private final UsersService usersService;
     private final ReportService reportService;
+    private final MailService mailService;
 
     @ApiOperation(value = "회원 가입")
     @ApiResponses({
@@ -39,10 +44,11 @@ public class UsersController {
             @ApiResponse(code = 3012, message = "이미 존재하는 닉네임입니다.")
     })
     @PostMapping("/join")
-    public BaseResponse<String> join(@Valid @RequestBody JoinDto joinDto, BindingResult bindingResult) {
+    public BaseResponse<String> join(@Valid @RequestBody JoinDto joinDto, BindingResult bindingResult) throws MessagingException, UnsupportedEncodingException {
         try {
             if(bindingResult.hasErrors())
                 usersService.isValid(bindingResult.getFieldErrors().get(0).getField());
+            mailService.sendVerificationMail(joinDto.getEmail(), joinDto.getNickname());
             usersService.join(joinDto);
             return new BaseResponse<>("회원 가입이 완료되었습니다.");
         } catch (BaseException exception) {
@@ -63,6 +69,24 @@ public class UsersController {
         try {
             MyPageInfo myPage = usersService.getMyPage();
             return new BaseResponse<>(myPage);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ApiOperation(
+            value = "비밀번호 찾기",
+            notes = "사용자의 비밀번호를 임시 비밀번호로 변경하고, 임시 비밀번호를 사용자의 이메일로 보냄"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 2000, message = "입력한 이메일과 닉네임 정보가 유효하지 않습니다."),
+            @ApiResponse(code = 3014, message = "존재하지 않는 이메일입니다."),
+    })
+    @PostMapping("/find/password")
+    public BaseResponse<String> findPassword(@RequestBody UsersInfo usersInfo) throws MessagingException, UnsupportedEncodingException {
+        try {
+            usersService.findPassword(usersInfo);
+            return new BaseResponse<>("임시 비밀번호 메일을 성공적으로 보냈습니다.");
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }
