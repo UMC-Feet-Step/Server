@@ -29,6 +29,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String email;
 
+
     public void sendMailForBlock(String to) throws BaseException, MessagingException , UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
