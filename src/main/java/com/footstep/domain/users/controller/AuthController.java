@@ -2,10 +2,13 @@ package com.footstep.domain.users.controller;
 
 import com.footstep.domain.base.BaseException;
 import com.footstep.domain.base.BaseResponse;
+import com.footstep.domain.mail.service.MailService;
 import com.footstep.domain.users.dto.LoginDto;
 import com.footstep.domain.users.dto.TokenDto;
+import com.footstep.domain.users.repository.UsersRepository;
 import com.footstep.domain.users.service.AuthService;
 import com.footstep.global.config.jwt.JwtTokenUtil;
+import com.footstep.global.view.View;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
@@ -22,6 +25,21 @@ public class AuthController {
     private final JwtTokenUtil jwtTokenUtil;
 
     @ApiOperation(
+            value = "이메일 활성화",
+            notes = "인증 메일의 링크로 들어오게 되면 이메일이 활성화되고 인증 완료 페이지로 리다이렉트"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 3014, message = "존재하지 않는 이메일입니다."),
+            @ApiResponse(code = 3061, message = "이메일 인증 정보를 찾을 수 없습니다."),
+    })
+    @GetMapping("/mail/certification")
+    public String certification(@RequestParam("mail") String mail,
+                                @RequestParam("certified") String certified) throws BaseException {
+        authService.certify(mail, certified);
+        return View.CERTIFICATION_SUCCESS_PAGE;
+    }
+
+    @ApiOperation(
             value = "로그인",
             notes = "이메일과 비밀번호를 입력하여 로그인")
     @ApiResponses({
@@ -30,6 +48,8 @@ public class AuthController {
             @ApiResponse(code = 3014, message = "없는 아이디입니다."),
             @ApiResponse(code = 3015, message = "비밀번호가 다릅니다."),
             @ApiResponse(code = 3016, message = "탈퇴한 회원입니다."),
+            @ApiResponse(code = 3017, message = "정지당한 회원입니다."),
+            @ApiResponse(code = 3018, message = "이메일 인증이 필요합니다.")
     })
     @PostMapping("/login")
     public BaseResponse<TokenDto> login(@Valid @RequestBody LoginDto loginDto, BindingResult bindingResult) {

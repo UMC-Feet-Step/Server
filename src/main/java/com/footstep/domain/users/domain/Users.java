@@ -32,16 +32,16 @@ public class Users extends BaseTimeEntity {
     private String email;
     private String nickname;
     private String password;
-    private String phoneNumber;
     private String profileImageUrl;
     private int reportedCount;
     private LocalDateTime bannedDate;
+    private Boolean certified;
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -67,6 +67,7 @@ public class Users extends BaseTimeEntity {
                 .nickname(joinDto.getNickname())
                 .status(Status.NORMAL)
                 .reportedCount(0)
+                .certified(false)
                 .build();
         member.addAuthority(Authority.ofUser(member));
         return member;
@@ -104,6 +105,10 @@ public class Users extends BaseTimeEntity {
 
     public void initReportedCount() {
         this.reportedCount = 0;
+    }
+
+    public void certified() {
+        this.certified = true;
     }
 
     public void changeBannedDate(LocalDateTime bannedDate) { this.bannedDate = bannedDate; }

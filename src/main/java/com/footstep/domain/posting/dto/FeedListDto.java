@@ -35,4 +35,6 @@ public class FeedListDto {
     @ApiModelProperty(notes = "게시글 게시일", example = "2022-08-10")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private Date recordDate;
+    @ApiModelProperty(notes = "좋아요 유무", example = "1")
+    private Long isLike;
 }

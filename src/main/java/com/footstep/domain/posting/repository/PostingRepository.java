@@ -18,27 +18,33 @@ public interface PostingRepository extends JpaRepository<Posting, Long> {
             "p.place = :place ORDER BY p.recordDate DESC")
     List<Posting> findByUsersAndPlaceOrderByRecordDateDesc(@Param("users") Users users, @Param("place") Place place);
 
-    @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.users = :users ORDER BY p.recordDate DESC")
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users " +
+            "WHERE p.status = 'NORMAL' AND p.users = :users ORDER BY p.recordDate DESC")
     List<Posting> findByUsers(@Param("users") Users users);
 
     @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.users = :users")
     List<Posting> findByUsersOrderByPlace(@Param("users") Users users);
 
-    @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.id NOT IN :reported " +
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users " +
+            "WHERE p.status = 'NORMAL' AND p.id NOT IN :reported " +
             "AND p.users != :users AND p.visibilityStatus = 'PUBLIC' ORDER BY p.recordDate DESC")
     List<Posting> findAllFeed(@Param("reported") List<Long> reported, @Param("users") Users users);
 
-    @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.users = :users AND p.id NOT IN :reported " +
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users " +
+            "WHERE p.status = 'NORMAL' AND p.users = :users AND p.id NOT IN :reported " +
             "AND p.visibilityStatus = 'PUBLIC' ORDER BY p.recordDate DESC")
     List<Posting> findSpecificFeed(@Param("reported") List<Long> reported, @Param("users") Users users);
 
-    @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.users = :users AND p.recordDate = :date")
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users " +
+            "WHERE p.status = 'NORMAL' AND p.users = :users AND p.recordDate = :date")
     List<Posting> findByUsersAndRecordDate(@Param("users") Users users, @Param("date") Date date);
 
-    @Query("SELECT p FROM Posting p WHERE p.status = 'NORMAL' AND p.users = :users AND p.place = :place AND p.recordDate = :date")
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users " +
+            "WHERE p.status = 'NORMAL' AND p.users = :users AND p.place = :place AND p.recordDate = :date")
     List<Posting> findByUsersAndRecordDateAndPlace(@Param("users") Users users,@Param("place") Place place ,@Param("date") Date date);
 
-    Optional<Posting> findById(Long postingId);
+    @Query("SELECT DISTINCT p FROM Posting p LEFT JOIN FETCH p.likeList pl LEFT JOIN FETCH pl.users WHERE p.id = :postingId")
+    Optional<Posting> findById(@Param("postingId") Long postingId);
 
     @Query("SELECT p FROM Posting p WHERE p.users = :users AND p.status = 'NORMAL' AND p.recordDate between :startDate AND :endDate")
     List<Posting> findByStartDateAndEndDate(@Param("users") Users users, @Param("startDate") Date startDate, @Param("endDate") Date endDate);

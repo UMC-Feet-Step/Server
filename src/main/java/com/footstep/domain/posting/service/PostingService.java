@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.*;
 import java.sql.Date;
 import java.util.stream.Collectors;
@@ -35,7 +34,6 @@ public class PostingService {
     private final PlaceService placeService;
     private final UsersRepository usersRepository;
     private final PostingRepository postingRepository;
-    private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final PlaceRepository placeRepository;
     private final S3UploadUtil s3UploadUtil;
@@ -46,8 +44,8 @@ public class PostingService {
         CreatePlaceDto createPlaceDto = createPostingDto.getCreatePlaceDto();
         Optional<Place> place = placeService.getPlace(createPlaceDto);
         Place createPlace;
-        String imageUrl = null;
-        if (!image.isEmpty()) {
+        String imageUrl = "";
+        if (image != null && !image.isEmpty()) {
             imageUrl = s3UploadUtil.upload(image);
         }
         if (place.isEmpty())
@@ -132,14 +130,20 @@ public class PostingService {
         List<Date> dates = postings.stream().map(Posting::getRecordDate).toList();
 
         for (Posting posting : postings) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(users)) {
+                isLike = 1L;
+            }
             PostingListDto dto = PostingListDto.builder()
                     .placeName(posting.getPlace().getName())
                     .recordDate(posting.getRecordDate())
                     .imageUrl(posting.getImageUrl())
                     .title(posting.getTitle())
-                    .likes((long) posting.getLikeList().size())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
                     .postingCount((long) Collections.frequency(dates, posting.getRecordDate()))
                     .postingId(posting.getId())
+                    .isLike(isLike)
                     .build();
             postingListDto.add(dto);
         }
@@ -147,28 +151,34 @@ public class PostingService {
     }
 
     public FeedListResponseDto viewFeed() throws BaseException {
-        Users currentUsers = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
+        Users users = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
                 .orElseThrow(() -> new BaseException(UNAUTHORIZED));
-        List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
+        List<Long> reported = users.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
         reported.add(0L);
-        List<Posting> feeds = postingRepository.findAllFeed(reported, currentUsers);
+        List<Posting> feeds = postingRepository.findAllFeed(reported, users);
         if (feeds.isEmpty()){
             throw new BaseException(NOT_FOUND_POSTING);
         }
         List<FeedListDto> feedListDto = new ArrayList<>();
 
-        for (Posting feed : feeds) {
+        for (Posting posting : feeds) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(users)) {
+                isLike = 1L;
+            }
             FeedListDto dto = FeedListDto.builder()
-                    .postingId(feed.getId())
-                    .usersId(feed.getUsers().getId())
-                    .nickname(feed.getUsers().getNickname())
-                    .imageUrl(feed.getImageUrl())
-                    .title(feed.getTitle())
-                    .content(feed.getContent())
-                    .likes((long) feed.getLikeList().size())
-                    .commentCount(feed.getComments().stream().filter(c -> c.getStatus() == Status.NORMAL).count())
-                    .placeName(feed.getPlace().getName())
-                    .recordDate(feed.getRecordDate())
+                    .postingId(posting.getId())
+                    .usersId(posting.getUsers().getId())
+                    .nickname(posting.getUsers().getNickname())
+                    .imageUrl(posting.getImageUrl())
+                    .title(posting.getTitle())
+                    .content(posting.getContent())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
+                    .commentCount(posting.getComments().stream().filter(c -> c.getStatus() == Status.NORMAL).count())
+                    .placeName(posting.getPlace().getName())
+                    .recordDate(posting.getRecordDate())
+                    .isLike(isLike)
                     .build();
             feedListDto.add(dto);
         }
@@ -176,11 +186,11 @@ public class PostingService {
     }
 
     public PostingListResponseDto viewSpecificFeedList(Long userId) throws BaseException {
-        Users currentUsers = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
+        Users users = usersRepository.findByEmail(SecurityUtils.getLoggedUserEmail())
                 .orElseThrow(() -> new BaseException(UNAUTHORIZED));
         Users targetUsers = usersRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(REQUEST_ERROR));
-        List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
+        List<Long> reported = users.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
         reported.add(0L);
         List<Posting> feeds = postingRepository.findSpecificFeed(reported, targetUsers);
         if (feeds.isEmpty())
@@ -188,15 +198,21 @@ public class PostingService {
         List<PostingListDto> postingListDto = new ArrayList<>();
         List<Date> dates = feeds.stream().map(Posting::getRecordDate).toList();
 
-        for (Posting feed : feeds) {
+        for (Posting posting : feeds) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(users)) {
+                isLike = 1L;
+            }
             PostingListDto dto = PostingListDto.builder()
-                    .placeName(feed.getPlace().getName())
-                    .recordDate(feed.getRecordDate())
-                    .imageUrl(feed.getImageUrl())
-                    .title(feed.getTitle())
-                    .likes((long) feed.getLikeList().size())
-                    .postingCount((long) Collections.frequency(dates, feed.getRecordDate()))
-                    .postingId(feed.getId())
+                    .placeName(posting.getPlace().getName())
+                    .recordDate(posting.getRecordDate())
+                    .imageUrl(posting.getImageUrl())
+                    .title(posting.getTitle())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
+                    .postingCount((long) Collections.frequency(dates, posting.getRecordDate()))
+                    .postingId(posting.getId())
+                    .isLike(isLike)
                     .build();
             postingListDto.add(dto);
         }
@@ -213,14 +229,20 @@ public class PostingService {
         List<Date> dates = postings.stream().map(Posting::getRecordDate).toList();
 
         for (Posting posting : postings) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(users)) {
+                isLike = 1L;
+            }
             PostingListDto dto = PostingListDto.builder()
                     .placeName(posting.getPlace().getName())
                     .recordDate(posting.getRecordDate())
                     .imageUrl(posting.getImageUrl())
                     .title(posting.getTitle())
-                    .likes((long) posting.getLikeList().size())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
                     .postingCount((long) Collections.frequency(dates, date))
                     .postingId(posting.getId())
+                    .isLike(isLike)
                     .build();
             postingListDto.add(dto);
         }
@@ -235,23 +257,28 @@ public class PostingService {
                 .orElseThrow(() -> new BaseException(NOT_FOUND_POSTING));
         Place place = placeRepository.findById(posting.getPlace().getId())
                 .orElseThrow(() -> new BaseException(NOT_FOUND_PLACE));
-        Integer likeCount = likeRepository.countByPosting(posting).orElse(0);
         List<Long> reported = currentUsers.getReports().stream().map(report -> report.getTargetId()).collect(Collectors.toList());
         reported.add(0L);
         List<Comment> comment = commentRepository.findByPosting(posting, reported);
         Integer countComment = commentRepository.countByPosting(postingId);
+        Long isLike = 0L;
+        List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+        if (likeMember.contains(currentUsers)) {
+            isLike = 1L;
+        }
         return SpecificPostingDto.builder()
                 .postingDate(posting.getRecordDate())
                 .postingName(posting.getTitle())
                 .content(posting.getContent())
                 .imageUrl(posting.getImageUrl())
                 .placeName(place.getName())
-                .likeNum(Integer.toString(likeCount))
+                .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
                 .nickName(posting.getUsers().getNickname())
                 .commentList(comment.stream()
                         .map(c -> CommentDto.builder().usersId(c.getUsers().getId()).commentId(c.getId()).nickname(c.getUsers().getNickname())
                                 .content(c.getContent()).build()).collect(Collectors.toList()))
                 .commentNum(Integer.toString(countComment))
+                .isLike(isLike)
                 .build();
     }
 

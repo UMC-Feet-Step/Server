@@ -28,4 +28,7 @@ public class PostingListDto {
     private Long postingCount;
     @ApiModelProperty(notes = "발자취 게시글 인덱스", example = "1")
     private Long postingId;
+    @ApiModelProperty(notes = "좋아요 유무", example = "1")
+    private Long isLike;
+
 }
