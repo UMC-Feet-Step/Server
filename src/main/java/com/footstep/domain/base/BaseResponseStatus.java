@@ -76,6 +76,7 @@ public enum BaseResponseStatus {
     INVALID_PASSWORD(false, 3015, "비밀번호가 다릅니다."),
     EXPIRED_USERS(false, 3016, "탈퇴한 회원입니다."),
     BANNED_USERS(false, 3017, "정지당한 회원입니다."),
+    NOT_CERTIFIED(false, 3018, "이메일 인증이 필요합니다."),
 
     // Place
     NOT_FOUND_PLACE(false, 3021, "없는 장소입니다."),
@@ -88,7 +89,8 @@ public enum BaseResponseStatus {
     NOT_FOUND_COMMENT(false, 3041, "댓글이 존재하지 않습니다."),
     // Like
     NOT_FOUND_LIKE(false, 3051, "좋아요를 찾을 수 없습니다."),
-
+    // mailVerification
+    NOT_FOUND_MAIL_VERIFICATION(false, 3061, "이메일 인증 정보를 찾을 수 없습니다."),
     /**
      * 4000 : Database, Server 오류
      */
