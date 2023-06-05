@@ -3,10 +3,11 @@ package com.footstep.domain.users.service;
 import com.footstep.domain.base.BaseException;
 import com.footstep.domain.base.BaseResponseStatus;
 import com.footstep.domain.base.Status;
+import com.footstep.domain.mail.repository.MailVerificationRepository;
+import com.footstep.domain.mail.service.MailService;
 import com.footstep.domain.users.domain.Users;
 import com.footstep.domain.users.domain.auth.LogoutAccessToken;
 import com.footstep.domain.users.domain.auth.RefreshToken;
-import com.footstep.domain.users.dto.JoinDto;
 import com.footstep.domain.users.dto.LoginDto;
 import com.footstep.domain.users.dto.TokenDto;
 import com.footstep.domain.users.repository.UsersRepository;
@@ -25,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 
 import static com.footstep.domain.base.BaseResponseStatus.*;
@@ -40,6 +43,8 @@ public class AuthService {
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository;
     private final JwtTokenUtil jwtTokenUtil;
+    private final MailVerificationRepository mailVerificationRepository;
+    private final MailService mailService;
 
     public TokenDto login(LoginDto loginDto) throws BaseException {
         Users users = usersRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new BaseException(NOT_FOUND_USERS_ID));
@@ -49,10 +54,22 @@ public class AuthService {
         if (users.getBannedDate() != null && LocalDateTime.now().isBefore(users.getBannedDate()))
             throw new BaseException(BANNED_USERS);
         checkPassword(loginDto.getPassword(), users.getPassword());
+        if (!users.getCertified()) {
+            throw new BaseException(NOT_CERTIFIED);
+        }
         String username = users.getEmail();
         String accessToken = jwtTokenUtil.generateAccessToken(username);
         RefreshToken refreshToken = saveRefreshToken(username);
         return TokenDto.of(accessToken, refreshToken.getRefreshToken());
+    }
+
+    public void certify(String mail, String certified) throws BaseException {
+        mailVerificationRepository.findByMailAndCode(mail, certified).orElseThrow(
+                () -> new BaseException(NOT_FOUND_MAIL_VERIFICATION));
+        Users users = usersRepository.findByEmail(mail).orElseThrow(
+                () -> new BaseException(NOT_FOUND_USERS_ID));
+        users.certified();
+        usersRepository.save(users);
     }
 
     private void checkPassword(String rawPassword, String findMemberPassword) throws BaseException {
