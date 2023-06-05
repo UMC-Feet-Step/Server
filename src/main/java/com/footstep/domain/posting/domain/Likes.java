@@ -1,5 +1,6 @@
 package com.footstep.domain.posting.domain;
 
+import com.footstep.domain.base.Status;
 import com.footstep.domain.posting.domain.posting.Posting;
 import com.footstep.domain.users.domain.Users;
 import lombok.AccessLevel;
@@ -19,6 +20,9 @@ public class Likes {
     @Column(name = "like_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
     private Users users;
@@ -31,5 +35,10 @@ public class Likes {
     public Likes(Users users, Posting posting) {
         this.users = users;
         this.posting = posting;
+        this.status = Status.NORMAL;
+    }
+
+    public void removeLikes() {
+        this.status = Status.EXPIRED;
     }
 }

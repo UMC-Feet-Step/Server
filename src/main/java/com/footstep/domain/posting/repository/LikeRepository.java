@@ -14,6 +14,7 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
 
     Optional<Likes> findByUsers(Users users);
 
-    @Query("SELECT l FROM Likes l WHERE l.users = :users AND l.posting = :posting")
+    @Query("SELECT l FROM Likes l WHERE l.users = :users AND l.posting = :posting " +
+            "AND l.status = 'NORMAL'")
     Optional<Likes> findByUsersAndPosting(@Param("users") Users users, @Param("posting") Posting posting);
 }

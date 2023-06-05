@@ -26,11 +26,13 @@ public class SpecificPostingDto {
     @ApiModelProperty(notes = "장소명", example = "서울역")
     private String placeName;   //5. 발자취 장소(위치)
     @ApiModelProperty(notes = "발자취 좋아요 수", example = "10")
-    private String likeNum; //6. 발자취 좋아요 갯수
+    private Long likes; //6. 발자취 좋아요 갯수
     @ApiModelProperty(notes = "발자취 작성자 닉네임", example = "위즈")
     private String nickName;    //7. 발자취 작성 유저 닉네임,
     @ApiModelProperty(notes = "발자취 댓글 리스트")
     private List<CommentDto> commentList; //8. 댓글 리스트
     @ApiModelProperty(notes = "발자취 댓글 수", example = "3")
     private String commentNum;  //9. 해당 발자취의 댓글 수
+    @ApiModelProperty(notes = "좋아요 유무", example = "1")
+    private Long isLike;
 }

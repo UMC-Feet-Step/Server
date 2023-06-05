@@ -47,7 +47,7 @@ public class PostingController {
             @ApiResponse(code = 2043, message = "경도의 범위는 -180°~180° 입니다.")
     })
     @PostMapping(value = "/write")
-    public BaseResponse<BaseResponseStatus> uploadPosting(@RequestHeader("Authorization")String accessToken, @RequestPart MultipartFile image,
+    public BaseResponse<BaseResponseStatus> uploadPosting(@RequestHeader("Authorization")String accessToken, @RequestPart(required = false) MultipartFile image,
                                                           @Valid @ModelAttribute CreatePostingDto createPostingDto, BindingResult bindingResult) throws IOException {
         try {
             if(bindingResult.hasErrors())

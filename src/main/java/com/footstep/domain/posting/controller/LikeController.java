@@ -24,12 +24,12 @@ public class LikeController {
     })
     @PostMapping("/like")
     @ApiResponse(code = 3031, message = "게시글이 존재하지 않습니다")
-    @ApiOperation(value = "좋아요 누르기", notes = "해당 게시물에 좋아요를 누름, 눌려있는 상태에서 좋아요를 누르면 취소")
-    public BaseResponse<String> like(
+    @ApiOperation(value = "좋아요 누르기", notes = "해당 게시물에 좋아요를 누르면 1(좋아요)을 반환, 눌려있는 상태에서 좋아요를 누르면 0(좋아요 취소)을 반환")
+    public BaseResponse<Long> like(
             @ApiParam(value = "게시물 ID", required = true, example = "3") @PathVariable("posting-id")Long postingId,
             @RequestHeader("Authorization")String accessToken) {
         try {
-            String result = likeService.like(postingId);
+            Long result = likeService.like(postingId);
             return new BaseResponse<>(result);
         }catch (BaseException exception){
             return new BaseResponse<>(exception.getStatus());

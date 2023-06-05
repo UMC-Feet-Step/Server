@@ -80,14 +80,20 @@ public class PlaceService {
 
         List<PostingListDto> postingListDto = new ArrayList<>();
         for (Posting posting : postings) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(currentUsers)) {
+                isLike = 1L;
+            }
             PostingListDto dto = PostingListDto.builder()
                     .placeName(place.getName())
                     .recordDate(posting.getRecordDate())
                     .imageUrl(posting.getImageUrl())
                     .title(posting.getTitle())
-                    .likes((long) posting.getLikeList().size())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
                     .postingCount((long) Collections.frequency(dates, posting.getRecordDate()))
                     .postingId(posting.getId())
+                    .isLike(isLike)
                     .build();
             postingListDto.add(dto);
         }
@@ -165,14 +171,20 @@ public class PlaceService {
         List<PostingListDto> postingListDto = new ArrayList<>();
 
         for (Posting posting : postings) {
+            Long isLike = 0L;
+            List<Users> likeMember = posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).map(l -> l.getUsers()).collect(Collectors.toList());
+            if (likeMember.contains(currentUsers)) {
+                isLike = 1L;
+            }
             PostingListDto dto = PostingListDto.builder()
                     .placeName(place.getName())
                     .recordDate(posting.getRecordDate())
                     .imageUrl(posting.getImageUrl())
                     .title(posting.getTitle())
-                    .likes((long) posting.getLikeList().size())
+                    .likes(posting.getLikeList().stream().filter(l -> l.getStatus() == Status.NORMAL).count())
                     .postingCount((long) Collections.frequency(dates, date))
                     .postingId(posting.getId())
+                    .isLike(isLike)
                     .build();
             postingListDto.add(dto);
         }
