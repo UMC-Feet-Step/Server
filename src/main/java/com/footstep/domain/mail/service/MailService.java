@@ -109,7 +109,7 @@ public class MailService {
                         "		감사합니다." +
                         "	</p>" +
                         "	<a style=\"color: #FFF; text-decoration: none; text-align: center;\"" +
-                        "	href=\"http://localhost:8080/mail/certification?mail=" + to + "&certified=" + ePw + "\" target=\"_blank\">" +
+                        "	href=\"http://52.78.49.35:8080/mail/certification?mail=" + to + "&certified=" + ePw + "\" target=\"_blank\">" +
                         "		<p" +
                         "			style=\"display: inline-block; width: 210px; height: 45px; margin: 30px 5px 40px; background: #FF8000; line-height: 45px; vertical-align: middle; font-size: 16px;\">" +
                         "			메일 인증</p>" +
